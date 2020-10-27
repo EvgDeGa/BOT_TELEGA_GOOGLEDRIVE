@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,6 +28,16 @@ public class CreateFolder {
 
     //Создание папки TELEGA-DRIVE
     //Функция возвращает id созданной папки
+    public static ArrayList<String> Create_chat(String folderIdParent, String folderName) throws IOException {
+        File folder = createGoogleFolder(folderIdParent, folderName);
+
+        ArrayList<String> list = new ArrayList<>();
+        list.add(folder.getId());
+        list.add(folderName);
+
+        return list;
+    }
+
     public static String Create_TG() throws IOException {
         File folder = createGoogleFolder(null, "TELEGA-DRIVE");
         return folder.getId();

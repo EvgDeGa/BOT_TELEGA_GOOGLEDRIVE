@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="GoooooooMaven" />
+        <module name="BOT_TELEGA_GOOGLEDRIVE" />
       </profile>
     </annotationProcessing>
   </component>
