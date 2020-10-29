@@ -6,11 +6,7 @@ public class UserData {
     public String user_name;// имя пользователя
     public String folder_id = "1";//id папки
     public String folders;
-    public int n_user; // номер авт. пользователя в чате
-    public int n_users_chat;// номер чата откуда пришёл запрос
-    public int U_S;// режим для натсройки
-    public String poll_ch_chat = "";//для сравнения для какого чата был запрос
-    public String poll_us_chat = "a";//для сравнения для какого чата был запрос
+    public Boolean poll = false;//маркер состояние опроса
     public String mode = "";// режим для настройки full filter
 
     public ArrayList<ChatData> chats  = new ArrayList<>();// список чатов откуда качать файлы

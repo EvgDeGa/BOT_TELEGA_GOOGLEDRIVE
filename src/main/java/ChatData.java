@@ -10,13 +10,13 @@ public class ChatData {
     public Boolean full;// настройка full
     public ArrayList<Users> users  = new ArrayList<>();// список пользователей чата
 
-    ChatData(String _chat_id,int _user_choose, String _chat_folder_id,String _chat_name,Boolean _filter, Boolean _full, Users _users){
+    ChatData(String _chat_id, String _chat_folder_id,String _chat_name,Boolean _filter, Boolean _full, Users _users){
         chat_id = _chat_id;
         chat_folder_id = _chat_folder_id;
         chat_name = _chat_name;
         filter = _filter;
         full = _full;
-        user_choose.add(_user_choose);
+
         users.add(_users);
     }
 

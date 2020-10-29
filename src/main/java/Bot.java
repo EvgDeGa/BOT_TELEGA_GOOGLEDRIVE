@@ -88,7 +88,7 @@ public class Bot extends TelegramLongPollingBot {
     public ArrayList<Integer> search_auth_user(Message message){
         String user_id = message.getFrom().getId().toString();
         int flag = 0;
-        int i = 0;
+        int i = -1;
         for(UserData userData : data.userData){
             i++;
             if(user_id.equals(userData.self_user_id)){
@@ -110,8 +110,8 @@ public class Bot extends TelegramLongPollingBot {
         String chat_id = message.getChatId().toString();
         String name = message.getFrom().getUserName() + message.getFrom().getFirstName();
         int flag = 0;
-        int Users_num = 0;
-        int Chat_num = 0;
+        int Users_num = -1;
+        int Chat_num = -1;
         for(ChatData chatData : data.chatData){
             String а = chatData.chat_id;
             Chat_num++;
@@ -141,8 +141,9 @@ public class Bot extends TelegramLongPollingBot {
     //Поиск и добавление чата
     //Возвращает номер чата
     public int search_auth_chat(String chat_id, String name){
-        int i = 0;
+        int i = -1;
         int flag = 0;
+
         for(ChatData chatData : data.chatData){
             i++;
             if(chatData.chat_id.equals(chat_id)){
@@ -151,7 +152,7 @@ public class Bot extends TelegramLongPollingBot {
             };
         }
         if(flag == 0){
-            data.Set_chatData(new ChatData(chat_id, 0,"",name,false,false, new Users("0","0","0")));
+            data.Set_chatData(new ChatData(chat_id ,"",name,false,false, new Users("0","0","0")));
             i++;
         }
         export_JSON(data);
@@ -165,7 +166,7 @@ public class Bot extends TelegramLongPollingBot {
         String name = message.getChat().getTitle();
         int length = data.userData.get(num_of_user).chats.toArray().length;
         data.userData.get(num_of_user).Set_chats(data.chatData.get(search_auth_chat(chat_id, name)));
-        data.userData.get(num_of_user).chats.get(length-1).chat_folder_id = folder_id;
+        data.userData.get(num_of_user).chats.get(length).chat_folder_id = folder_id;
         export_JSON(data);
     }
 
@@ -237,87 +238,108 @@ public class Bot extends TelegramLongPollingBot {
         return CreateFolder.Create_chat(folderIdParent, name);
     }
 
-    //Создание голосования за выбор чата и за выбор пользователя
-    public void chat_choice(int n_user, int  n_users_chat, Message message, int mode) throws TelegramApiException {
-        int i = 0;
-        data.userData.get(n_user).n_user = n_user;
-        data.userData.get(n_user).n_users_chat = n_users_chat;
-        String question = "";
-        String question_2 = "";
-        ArrayList<String> options = new ArrayList<>();
-        //Выбор чата
-        if(mode == 0 ){
-            data.userData.get(n_user).U_S = 0;
-            question = "Выбирите чат";
-            question_2 = "Чат";
-            String list = "Ваши чаты:\n";
-            for (ChatData chatData : data.userData.get(n_user).chats) {
-                list = list + chatData.chat_name + "\n";
-            }
-            list = list +  "\n" + "Выберите один.";
-            try {
-                execute(new SendMessage().setChatId(message.getFrom().getId().toString()).setText(list));
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+    //Выбор чата
+    public String choice_chat(int n_user){
+        String list = "Ваши чаты\n";
+        for(ChatData chatData: data.userData.get(n_user).chats){
+            list = list + chatData.chat_name + "\n";
         }
-        //Выбор пользователя
-        if(mode == 1 ) {
-            String list = "";
-            for (Integer integer: data.userData.get(n_user).chats.get(n_users_chat).user_choose){
-                list = list + data.userData.get(n_user).chats.get(n_users_chat).users.get(integer).user_name_s + "\n";
-            }
-            execute(new SendMessage().setChatId(data.userData.get(n_user).self_user_id).setText("Уже добавленные пользователи:\n" + list));
-
-            data.userData.get(n_user).U_S = 1;
-            export_JSON(data);
-            question = "Кого добавить?";
-            question_2 = "Пользователь";
-            data.userData.get(n_user).poll_us_chat = data.userData.get(n_user).chats.get(n_users_chat).chat_id;
-            for (Users users : data.userData.get(n_user).chats.get(n_users_chat).users) {
-                i++;
-                int flag = 0;
-                for(Integer integer : data.userData.get(n_user).chats.get(n_users_chat).user_choose){
-                    if(users.user_name_s.equals(data.userData.get(n_user).chats.get(n_users_chat).users.get(integer).user_name_s)) {
-                        flag = 1;
-                        i--;
-                        break;
-                    }
-                }
-                if(flag == 0){
-                    options.add(users.user_name_s);
-                }
-                if (i == 10) {
-                    try {
-                        execute(new SendPoll().setChatId(message.getFrom().getId().toString()).setQuestion(question).setOptions(options).setAllowMultipleAnswers(true).setAnonymous(false));
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
-                    i = 0;
-                    options.clear();
-                }
-            }
-        }
-        if((i < 10)&&(i != 0)&&(i != 1)){
-            try {
-                execute(new SendPoll().setChatId(message.getFrom().getId().toString()).setQuestion(question).setOptions(options).setAllowMultipleAnswers(true).setAnonymous(false));
-            }catch (TelegramApiException e){
-                e.printStackTrace();
-            }
-        }
-        if(i == 1){
-            ArrayList<String> op = new ArrayList<>();
-            op.add("Да");
-            op.add("Нет");
-            try {
-                execute(new SendPoll().setChatId(message.getFrom().getId().toString()).setQuestion("У вас всего 1" + question_2 + ": " + options.get(0) + "\nИзменить его").setOptions(op).setAllowMultipleAnswers(false).setAnonymous(false));
-            }catch (TelegramApiException e){
-                e.printStackTrace();
-            }
-        }
-      //  export_JSON(data);
+        return list;
     }
 
+    //Включение параметра fill и filter  в выбранных чатах
+    public void parse_chat(String list, int n_user) throws TelegramApiException {
+        String[] buffer = list.split(",");
+        String mode = data.userData.get(n_user).mode;
+        String mes = "Натсройка " + mode + " в чатах\n";
+        for(String buf : buffer ){
+            int i = -1;
+            for(ChatData chatData: data.userData.get(n_user).chats) {
+                if (buf.equals(chatData.chat_name)){
+                    mes += chatData.chat_name + "\n";
+                    if(mode.equals("full")){
+                        chatData.full = true;
+                        chatData.filter = false;
+                    }
+                    if(mode.equals("filter")){
+                        chatData.filter = true;
+                        chatData.full = false;
+                    }
+                }
+            }
+        }
+        mes += "Включена";
+        execute(new SendMessage().setChatId(data.userData.get(n_user).self_user_id).setText(mes));
+        data.userData.get(n_user).mode = "";
+        data.userData.get(n_user).poll = false;
+        export_JSON(data);
+    }
+
+    //Отключение функций full filter
+    public void stop(int n_user) throws TelegramApiException {
+        for(ChatData chatData: data.userData.get(n_user).chats){
+            chatData.filter = false;
+            chatData.full = false;
+        }
+        export_JSON(data);
+        execute(new SendMessage().setChatId(data.userData.get(n_user).self_user_id).setText("Настройки изменены"));
+    }
+
+    //Добавление папки для пользователся с помощью функции add
+    public void add(Message message,int n_user,int n_chat){
+        if(message.getEntities() != null){
+            for(MessageEntity messageEntity : message.getEntities()){
+                if(messageEntity.getUser() != null){
+                    int flag = 0;
+                    int i = -1;
+                    String id = messageEntity.getUser().getId().toString();
+                    String name;
+                    if(messageEntity.getUser().getUserName() == null){
+                        name = messageEntity.getUser().getFirstName();
+                    }else{
+                        name = messageEntity.getUser().getUserName();
+                    }
+                    for(Users users: data.userData.get(n_user).chats.get(n_chat).users){
+                        i++;
+                        if(users.user_id_s.equals(id)){
+                            flag =1;
+                            break;
+                        }
+                    }
+                    if (flag == 1){
+                        int flag_1 = 0;
+                        for(Integer integer: data.userData.get(n_user).chats.get(n_chat).user_choose){
+                            if(i == integer){
+                                flag_1 = 1;
+                                break;
+                            }
+                        }
+                        if(flag_1 == 0){
+                            data.userData.get(n_user).chats.get(n_chat).Set_user_choose(i);
+                        }
+
+                    }else{
+                        data.userData.get(n_user).chats.get(n_chat).Set_user_id(new Users(id,"0",name));
+                        int length = data.userData.get(n_user).chats.get(n_chat).users.toArray().length;
+                        data.userData.get(n_user).chats.get(n_chat).Set_user_choose(length-1);
+                    }
+                }
+            }
+        }
+        export_JSON(data);
+    }
+
+    //Изменение параметров full и filter
+    public void set_full_filter(int n_user) throws TelegramApiException {
+        String list = choice_chat(n_user);
+        String buf = data.userData.get(n_user).mode;
+        execute(new SendMessage().setChatId(data.userData.get(n_user).self_user_id).setText("Выберите чаты для которых изменить настройку - " + buf + "\nНапишите нужные чаты через запятую и без пробелов\n\n" + list));
+        data.userData.get(n_user).poll = true;
+        export_JSON(data);
+    }
+
+
+    //Создание голосования за выбор чата и за выбор пользователя
     public void onUpdateReceived(Update update) {
 
         Message message = update.getMessage();
@@ -330,8 +352,8 @@ public class Bot extends TelegramLongPollingBot {
         ArrayList<Integer> _search_chat_user;
         int n_auth_chat = 0;
         int flag = 0;
-        int n_users_chat = 0;
-        int n_users = 0;
+        int n_user_chat = 0;
+        int n_user = 0;
         int chat_flag = 0;
         ArrayList<Integer> _search_user_chat;
         Boolean filter;
@@ -355,13 +377,13 @@ public class Bot extends TelegramLongPollingBot {
             if (flag == 1) {
 
                 _search_user_chat = search_user_chat(user_id, chat_id, chat_name);
-                n_users = _search_user_chat.get(0);
-                n_users_chat = _search_user_chat.get(1);
+                n_user = _search_user_chat.get(0);
+                n_user_chat = _search_user_chat.get(1);
                 chat_flag = _search_user_chat.get(2);
 
-                if (data.userData.get(n_users).folder_id.equals("0")) {
+                if (data.userData.get(n_user).folder_id.equals("0")) {
                     try {
-                        data.userData.get(n_users).folder_id = Check();
+                        data.userData.get(n_user).folder_id = Check();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -373,36 +395,20 @@ public class Bot extends TelegramLongPollingBot {
             filter = false;
             full = false;
 
-            int gl_m = data.userData.get(n_users).U_S;
+
 
             //Команды
 
             //Вывод списка диалогов, для выбора пользоватлей, для котрых нужно создать папки
             if (message.hasText()) {
-                if (gl_m == 0) {
-                    int i = -1;
-                    for (ChatData chatData : data.userData.get(n_users).chats) {
-                        i++;
-                        if (chatData.chat_name.equals(message.getText())) {
-                            try {
-                                chat_choice(n_users, i, message, 1);//Вывод участников чата
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
-                            data.userData.get(n_users).poll_ch_chat = chatData.chat_id;
-                            data.userData.get(n_users).U_S = 1;
-                            export_JSON(data);
-                            break;
-                        }
-                    }
-                }
-
-                //команда на добавление пользователя вручную
+//
+                //Команда на добавление пользователя вручную
                 String buf = message.getText().split(" ")[0];
                 if(buf.equals("/add")){
                         if(flag == 1) {
-                            data.userData.get(n_users).U_S = -1;
-                            add(message, n_users, n_users_chat);
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
+                            add(message, n_user, n_user_chat);
                         }else {
                             try {
                                 execute(sendMessage.setText("Нужен доступ к Google-Drive\nПредоставить доступ - /reg"));
@@ -417,11 +423,12 @@ public class Bot extends TelegramLongPollingBot {
                     //список комнад
                     case "/command":
                         if(flag == 1){
-                            data.userData.get(n_users).U_S = -1;
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
                         }
 
                         try {
-                            execute(sendMessage.setText("Создать отдельные папки для пользователей  /folder\nЗагружать фалы только для тех пользователей у которых есть папки - /filter\nАвтоматически создавать папки для всех пользователей - /full\nОстановить действие настроек full и filter - /stop "));
+                            execute(sendMessage.setText("Создать отдельные папки для пользователей  /folder\nЗагружать фалы только для тех пользователей у которых есть папки - /filter\nЗагружать файлы в папки для всех пользователей - /full\nОстановить действие настроек full и filter - /stop "));
                         } catch (TelegramApiException e) {
                             e.printStackTrace();
                         }
@@ -429,9 +436,10 @@ public class Bot extends TelegramLongPollingBot {
                         //Выбор режима создания папок
                     case "/folder":
                         if (flag == 1) {
-                            data.userData.get(n_users).U_S = -1;
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
                             try {
-                                execute(sendMessage.setText("Если хотите создать отдельные папки, для определённых пользователей напишите - /choice .\n\n Учтите, что по началу создание папок для определённых пользователей может быть недоступно.Список людей будет пополняться после того как они напишут сообщение в чат, после этого нужно заново вызвать команду /choice и добавить недостающих людей. Если выбрана функция /full, то папки будут добавляться автоматически. \n\nЕсли хотите добавить пользователся вручную то напишиет в чате, где находиться пользователь /add @%user-name%"));
+                                execute(sendMessage.setText("/full - папки для каждого участника чата будут добавляться автоматически. \n\nЕсли хотите добавить пользователя вручную то напишиет в чате, где находиться пользователь /add @%user-name%"));
                             } catch (TelegramApiException e) {
                                 e.printStackTrace();
                             }
@@ -443,42 +451,19 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                         break;
-                    //Выбор папок для пользователей через голосование
-                    case "/choice":
-                        if(flag == 1) {
-                            data.userData.get(n_users).U_S = -1;
-                            if (gl_m == 1) {
-                                try {
-                                    chat_choice(n_users, n_users_chat, message, 1);
-                                } catch (TelegramApiException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            if (gl_m == -1) {
-                                try {
-                                    chat_choice(n_users, n_users_chat, message, 0);
-                                } catch (TelegramApiException e) {
-                                    e.printStackTrace();
-                                }
 
-                            } else {
-                                data.userData.get(n_users).U_S = -1;
-                            }
-                        } else {
-                            try {
-                                execute(sendMessage.setText("Нужен доступ к Google-Drive\nПредоставить доступ - /reg"));
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        break;
                     //Папки буду создаваться автоматически для всех пользователей чата
                     case "/full":
 
                         if (flag == 1) {
-                            data.userData.get(n_users).U_S = -1;
-                            data.userData.get(n_users).mode = "full";
-                            set_full_filter(n_users, message);
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
+                            data.userData.get(n_user).mode = "full";
+                            try {
+                                set_full_filter(n_user);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
                         } else {
                             try {
                                 execute(sendMessage.setText("Нужен доступ к Google-Drive\nПредоставить доступ - /reg"));
@@ -491,9 +476,14 @@ public class Bot extends TelegramLongPollingBot {
                     case "/filter":
 
                         if ((flag == 1)) {
-                            data.userData.get(n_users).U_S = -1;
-                            data.userData.get(n_users).mode = "filter";
-                            set_full_filter(n_users, message);
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
+                            data.userData.get(n_user).mode = "filter";
+                            try {
+                                set_full_filter(n_user);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
                         } else {
                             try {
                                 execute(sendMessage.setText("Нужен доступ к Google-Drive\nПредоставить доступ - /reg"));
@@ -506,7 +496,8 @@ public class Bot extends TelegramLongPollingBot {
                     case "/start":
 
                         if ((flag == 1)) {
-                            data.userData.get(n_users).U_S = -1;
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
                             if (message.getFrom().getId().toString().equals(message.getChatId().toString())) {
                                 try {
                                     execute(sendMessage.setText("Здесь этого сделать нельзя"));
@@ -517,11 +508,11 @@ public class Bot extends TelegramLongPollingBot {
                                 if (chat_flag == 0) {
                                     ArrayList<String> id_name = new ArrayList<>();
                                     try {
-                                        id_name = create_chat_folder(data.userData.get(n_users).folder_id, message);
+                                        id_name = create_chat_folder(data.userData.get(n_user).folder_id, message);
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                    add_chat(n_users, message, id_name.get(0));
+                                    add_chat(n_user, message, id_name.get(0));
                                     export_JSON(data);
                                 }
                             }
@@ -538,7 +529,8 @@ public class Bot extends TelegramLongPollingBot {
                     case "/reg":
 
                         if(flag == 1){
-                            data.userData.get(n_users).U_S = -1;
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
                         }
                         try {
                            DriveQuickstart.main();
@@ -548,8 +540,13 @@ public class Bot extends TelegramLongPollingBot {
                         break;
                     case "/stop":
                         if (flag == 1) {
-                            data.userData.get(n_users).U_S = -1;
-                            stop(n_users);
+                            data.userData.get(n_user).mode = "";
+                            data.userData.get(n_user).poll = false;
+                            try {
+                                stop(n_user);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
                         } else {
                             try {
                                 execute(sendMessage.setText("Нужен доступ к Google-Drive\nПредоставить доступ - /reg"));
@@ -560,12 +557,22 @@ public class Bot extends TelegramLongPollingBot {
                         break;
                     //информационное сообщение
                     default:
-                        if(flag ==1 ){
-                            if ((message.getFrom().getId().toString().equals(message.getChatId().toString())) && (gl_m == -1) && (!buf.equals("/add"))) {
+                        if(flag == 1){
+                            if(data.userData.get(n_user).poll){//ввод выбранных чатов для full filter
                                 try {
-                                    execute(sendMessage.setText("Привет, если меня добавить в чат и написать в чате /start, то я начну загружать файлы отправленные пользователми к вам на гугл диск. Если вас интересует мой функционал напишите /command "));
+                                    parse_chat(message.getText(), n_user);
                                 } catch (TelegramApiException e) {
                                     e.printStackTrace();
+                                }
+                            }else {
+                                data.userData.get(n_user).mode = "";
+                                data.userData.get(n_user).poll = false;
+                                if ((message.getFrom().getId().toString().equals(message.getChatId().toString())) && (!buf.equals("/add"))) {
+                                    try {
+                                        execute(sendMessage.setText("Привет, если меня добавить в чат и написать в чате /start, то я начну загружать файлы отправленные пользователми к вам на гугл диск. Если вас интересует мой функционал напишите /command "));
+                                    } catch (TelegramApiException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }else {
@@ -670,179 +677,10 @@ public class Bot extends TelegramLongPollingBot {
                 }
             }
         }
-
-        //Проверка данных голосования о выборе пользователей
-        if ((update.getPollAnswer() != null)) {
-            int j = -1;
-            for (UserData userData : data.userData) {
-                j++;
-                if (userData.self_user_id.equals(update.getPollAnswer().getUser().getId().toString())) {
-                    break;
-                }
-            }
-            int gl_ch = data.userData.get(j).n_users_chat;
-            sendMessage.setChatId(data.userData.get(j).self_user_id);
-            String list = "";
-            int U_S = data.userData.get(j).U_S;
-
-            switch (U_S) {
-                //Для добавления пользователя
-                case 1:
-                    if (data.userData.get(j).poll_us_chat.equals(data.userData.get(j).poll_ch_chat)) {
-                        try {
-
-                            for (Integer option : update.getPollAnswer().getOptionIds()) {
-
-                                data.userData.get(j).chats.get(gl_ch).Set_user_choose(option);
-
-                                 list = list + data.userData.get(j).chats.get(gl_ch).users.get(option).user_name_s + "\n";
-
-                            }
-                            execute(sendMessage.setText("Выбран пользователь:\n" + list));
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                        data.userData.get(j).poll_us_chat = "a";
-                        data.userData.get(j).poll_ch_chat = "";
-
-                    } else {
-                        try {
-                            execute(sendMessage.setText("Что-то пошло не так, попробуйде еще раз."));
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                break;
-                    //Для изменения настроек full filter
-            case 2:
-                if (data.userData.get(j).U_S == 2) {
-                    String mode = data.userData.get(j).mode;
-                    try {
-                        if (mode.equals("filter")) {
-                            for (Integer option : update.getPollAnswer().getOptionIds()) {
-                                data.userData.get(j).chats.get(option).filter = true;
-                            }
-                            execute(sendMessage.setText("Настройки изменены"));
-                        }
-                        if (mode.equals("full")) {
-                            for (Integer option : update.getPollAnswer().getOptionIds()) {
-                                data.userData.get(j).chats.get(option).full = true;
-                            }
-                            execute(sendMessage.setText("Настройки изменены"));
-                        }
-                        data.userData.get(j).mode = "";
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
-                }
-                break;
-            default:
-                try {
-                    execute(sendMessage.setText("Ничего не произошло."));
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-
-        }
-
-            data.userData.get(j).U_S = -1;
-            export_JSON(data);
-        }
-
     }
 
 
-    //Отключение функций full filter
-    public void stop(int n_user){
-        for(ChatData chatData: data.userData.get(n_user).chats){
-            chatData.filter = false;
-            chatData.full = false;
-        }
-        export_JSON(data);
-    }
 
-    //Добавление папки для пользователся с помощью функции add
-    public void add(Message message,int n_user,int n_chat){
-        if(message.getEntities() != null){
-            for(MessageEntity messageEntity : message.getEntities()){
-                if(messageEntity.getUser() != null){
-                    int flag = 0;
-                    int i = -1;
-                    String id = messageEntity.getUser().getId().toString();
-                    String name;
-                    if(messageEntity.getUser().getUserName() == null){
-                        name = messageEntity.getUser().getFirstName();
-                    }else{
-                        name = messageEntity.getUser().getUserName();
-                    }
-                    for(Users users: data.userData.get(n_user).chats.get(n_chat).users){
-                        i++;
-                        if(users.user_id_s.equals(id)){
-                            flag =1;
-                            break;
-                        }
-                    }
-                    if (flag == 1){
-                        int flag_1 = 0;
-                        for(Integer integer: data.userData.get(n_user).chats.get(n_chat).user_choose){
-                            if(i == integer){
-                                flag_1 = 1;
-                                break;
-                            }
-                        }
-                        if(flag_1 == 0){
-                            data.userData.get(n_user).chats.get(n_chat).Set_user_choose(i);
-                        }
-
-                    }else{
-                        data.userData.get(n_user).chats.get(n_chat).Set_user_id(new Users(id,"0",name));
-                        int length = data.userData.get(n_user).chats.get(n_chat).users.toArray().length;
-                        data.userData.get(n_user).chats.get(n_chat).Set_user_choose(length-1);
-                    }
-                }
-            }
-        }
-        export_JSON(data);
-    }
-
-    //Изменение параметров full и filter
-    public void set_full_filter(int n_user, Message message) {
-        ArrayList<String> options = new ArrayList<>();
-        int i =0;
-        for (ChatData chatData : data.userData.get(n_user).chats) {
-            i++;
-            options.add(chatData.chat_name);
-            if (i == 10) {
-                try {
-                    execute(new SendPoll().setChatId(message.getFrom().getId().toString()).setQuestion("Для каких чатов изменить настройки").setOptions(options).setAllowMultipleAnswers(true).setAnonymous(false));
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-                i = 0;
-                options.clear();
-            }
-        }
-        if((i < 10)&&(i != 0)&&(i != 1)){
-            try {
-                execute(new SendPoll().setChatId(message.getFrom().getId().toString()).setQuestion("Для каких чатов изменить настройки").setOptions(options).setAllowMultipleAnswers(true).setAnonymous(false));
-            }catch (TelegramApiException e){
-                e.printStackTrace();
-            }
-        }
-        if(i == 1){
-            ArrayList<String> op = new ArrayList<>();
-            op.add("Да");
-            op.add("Нет");
-            try {
-                execute(new SendPoll().setChatId(message.getFrom().getId().toString()).setQuestion("Изменить настройки для чата: " + options.get(0)).setOptions(op).setAllowMultipleAnswers(false).setAnonymous(false));
-            }catch (TelegramApiException e){
-                e.printStackTrace();
-            }
-        }
-        data.userData.get(n_user).U_S = 2;
-        export_JSON(data);
-    }
 
     //Скачивание и загрузка файла на гугл диск
     public void down_up(Message message, String folder_id){
