@@ -2,13 +2,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatData {
-    public String chat_id;
-    ArrayList<Integer> user_choose = new ArrayList<>();
-    public String chat_folder_id;
-    public String chat_name;
-    public Boolean filter;
-    public Boolean full;
-    public ArrayList<Users> users  = new ArrayList<>();;
+    public String chat_id; // id чата
+    ArrayList<Integer> user_choose = new ArrayList<>(); // номера пользователей для которых нужно создать папки
+    public String chat_folder_id;// id папки чата
+    public String chat_name;// имя чата
+    public Boolean filter;// настройка filter
+    public Boolean full;// настройка full
+    public ArrayList<Users> users  = new ArrayList<>();// список пользователей чата
 
     ChatData(String _chat_id,int _user_choose, String _chat_folder_id,String _chat_name,Boolean _filter, Boolean _full, Users _users){
         chat_id = _chat_id;

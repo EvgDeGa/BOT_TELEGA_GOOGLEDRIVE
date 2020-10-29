@@ -20,7 +20,5 @@ public class Main {
         } catch (TelegramApiException | IOException | ParseException e){
             e.printStackTrace();
         }
-        }
-
-
+    }
 }

@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 public class Data {
 
-    ArrayList<UserData> userData = new ArrayList<>();
-    ArrayList<ChatData> chatData = new ArrayList<>();
+    ArrayList<UserData> userData = new ArrayList<>();//список чатов в которых есть бот
+    ArrayList<ChatData> chatData = new ArrayList<>();//список авторизированных пользователей
 
     Data(UserData _userData,ChatData _chatData){
         chatData.add(_chatData);
