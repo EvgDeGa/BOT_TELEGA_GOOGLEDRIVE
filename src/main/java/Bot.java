@@ -353,11 +353,21 @@ public class Bot extends TelegramLongPollingBot {
 
             //Проверка на авторизированного пользователя
             if (flag == 1) {
+
                 _search_user_chat = search_user_chat(user_id, chat_id, chat_name);
                 n_users = _search_user_chat.get(0);
                 n_users_chat = _search_user_chat.get(1);
                 chat_flag = _search_user_chat.get(2);
+
+                if (data.userData.get(n_users).folder_id.equals("0")) {
+                    try {
+                        data.userData.get(n_users).folder_id = Check();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
+
 
             add_users_id(message, chat_id);
             filter = false;
