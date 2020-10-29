@@ -15,6 +15,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 
 
@@ -410,7 +411,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
 
                         try {
-                            execute(sendMessage.setText("Создать отдельные папки для пользователей  /folder\nЗагружать фалы только для выбранных пользователей - /filter\nАвтоматически создавать папки для всех пользователей - /full\nОстановить действие настроек full и filter - /stop "));
+                            execute(sendMessage.setText("Создать отдельные папки для пользователей  /folder\nЗагружать фалы только для тех пользователей у которых есть папки - /filter\nАвтоматически создавать папки для всех пользователей - /full\nОстановить действие настроек full и filter - /stop "));
                         } catch (TelegramApiException e) {
                             e.printStackTrace();
                         }
@@ -530,8 +531,8 @@ public class Bot extends TelegramLongPollingBot {
                             data.userData.get(n_users).U_S = -1;
                         }
                         try {
-                            execute(sendMessage.setText("Недоступно"));
-                        } catch (TelegramApiException e) {
+                           DriveQuickstart.main();
+                        } catch ( IOException | GeneralSecurityException e) {
                             e.printStackTrace();
                         }
                         break;
@@ -560,7 +561,7 @@ public class Bot extends TelegramLongPollingBot {
                         }else {
                             if (message.getFrom().getId().toString().equals(message.getChatId().toString())) {
                                 try {
-                                    execute(sendMessage.setText("Привет, если меня добавить в чат и написать в чате /start, то я начну загружать файлы отправленные пользователми к вам на гугл диск. Если вас интересует мой функционал напишите /command "));
+                                    execute(sendMessage.setText("Привет, если меня добавить в чат и написать в чате /start, то я начну загружать файлы отправленные участниками чата к вам на гугл диск. Если вас интересует мой функционал напишите /command "));
                                 } catch (TelegramApiException e) {
                                     e.printStackTrace();
                                 }
