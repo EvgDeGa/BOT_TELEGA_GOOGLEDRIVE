@@ -108,7 +108,12 @@ public class Bot extends TelegramLongPollingBot {
     public ArrayList<Integer> search_chat_user(Message message){
         String user_id = message.getFrom().getId().toString();
         String chat_id = message.getChatId().toString();
-        String name = message.getFrom().getUserName() + message.getFrom().getFirstName();
+        String name;
+        if(message.getFrom().getUserName() == null){
+            name = message.getFrom().getFirstName();
+        }else{
+            name = message.getFrom().getUserName();
+        }
         int flag = 0;
         int Users_num = -1;
         int Chat_num = -1;
